@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Weather App</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <style id="app-style">
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Roboto', sans-serif;
+    }
+    
+    :root {
+      --primary-color: #ffffff;
+      --secondary-color: #f0f0f0;
+      --accent-color: #2196f3;
+      --text-color: #333333;
+      --text-light: #ffffff;
+      --shadow: 0 4px 6px rgba(0,0,0,0.1);
+      --transition: all 0.3s ease;
+    }
+    
+    body {
+      background-color: #f5f5f5;
+      color: var(--text-color);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    
+    .container {
+      max-width: 100%;
+      overflow: hidden;
+      position: relative;
+      height: 100vh;
+    }
+    
+    .header {
+      padding: 20px;
+      text-align: center;
+      position: relative;
+      z-index: 10;
+    }
+    
+    .header h1 {
+      font-size: 2rem;
+      font-weight: 500;
+      color: var(--text-light);
+      margin-bottom: 5px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    .background {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      transition: var(--transition);
+    }
+    
+    .parallax-layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-size: cover;
+      background-position: center;
+      opacity: 0;
+      transition: opacity 1s ease;
+    }
+    
+    .day {
+      background: linear-gradient(160deg, #72ccff 0%, #2f80ed 100%);
+    }
+    
+    .night {
+      background: linear-gradient(160deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+    }
+    
+    .clouds {
+      background-image: url('https://cdn.pixabay.com/photo/2016/11/23/15/14/cloud-1853667_1280.png');
+      background-size: contain;
+      background-repeat: repeat-x;
+      animation: moveClouds 60s linear infinite;
+      opacity: 0.7;
+    }
+    
+    @keyframes moveClouds {
+      from { background-position: 0 0; }
+      to { background-position: 100% 0; }
+    }
+    
+    .stars {
+      background-image: url('https://cdn.pixabay.com/photo/2017/01/31/15/33/star-2025184_1280.png');
+      background-size: 300px;
+      opacity: 0;
+      transition: opacity 1s ease;
+    }
+    
+    .tabs {
+      display: flex;
+      justify-content: center;
+      position: relative;
+      z-index: 10;
+      margin-bottom: 20px;
+    }
+    
+    .tab {
+      padding: 12px 20px;
+      background-color: rgba(255, 255, 255, 0.2);
+      color: var(--text-light);
+      cursor: pointer;
+      margin: 0 5px;
+      border-radius: 20px;
+      font-weight: 500;
+      transition: var(--transition);
+    }
+    
+    .tab.active {
+      background-color: rgba(255, 255, 255, 0.4);
+      box-shadow: var(--shadow);
+    }
+    
+    .weather-panels {
+      position: relative;
+      width: 100%;
+      max-width: 500px;
+      margin: 0 auto;
+      z-index: 10;
+      transition: var(--transition);
+    }
+    
+    .panel {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      padding: 30px;
+      border-radius: 20px;
+      background-color: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(10px);
+      box-shadow: var(--shadow);
+      color: var(--text-light);
+      text-align: center;
+      opacity: 0;
+      transform: translateX(30px);
+      pointer-events: none;
+      transition: var(--transition);
+    }
+    
+    .panel.active {
+      opacity: 1;
+      transform: translateX(0);
+      pointer-events: auto;
+    }
+    
+    .city-name {
+      font-size: 2.5rem;
+      font-weight: 600;
+      margin-bottom: 5px;
+    }
+    
+    .local-time {
+      font-size: 1.2rem;
+      margin-bottom: 20px;
+      opacity: 0.9;
+    }
+    
+    .temperature {
+      font-size: 5rem;
+      font-weight: 300;
+      margin-bottom: 10px;
+    }
+    
+    .condition {
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+    }
+    
+    .weather-icon {
+      font-size: 4rem;
+      margin: 20px 0;
+    }
+    
+    .details {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 30px;
+    }
+    
+    .detail {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    
+    .detail-value {
+      font-size: 1.5rem;
+      font-weight: 500;
+      margin-top: 5px;
+    }
+    
+    .detail-label {
+      font-size: 1rem;
+      opacity: 0.8;
+    }
+    
+    .particles {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      pointer-events: none;
+    }
+    
+    .particle {
+      position: absolute;
+      background-color: rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      pointer-events: none;
+      opacity: 0;
+    }
+    
+    .rain .particle {
+      width: 2px;
+      height: 20px;
+      border-radius: 0;
+      animation: rain 1.5s linear infinite;
+    }
+    
+    .snow .particle {
+      width: 6px;
+      height: 6px;
+      animation: snow 6s linear infinite;
+    }
+    
+    @keyframes rain {
+      0% {
+        transform: translateY(-100px);
+        opacity: 0;
+      }
+      10% {
+        opacity: 1;
+      }
+      95% {
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(100vh);
+        opacity: 0;
+      }
+    }
+    
+    @keyframes snow {
+      0% {
+        transform: translateY(-100px) rotate(0deg);
+        opacity: 0;
+      }
+      10% {
+        opacity: 0.8;
+      }
+      90% {
+        opacity: 0.8;
+      }
+      100% {
+        transform: translateY(100vh) rotate(360deg);
+        opacity: 0;
+      }
+    }
+    
+    .footer {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      padding: 10px;
+      text-align: center;
+      color: var(--text-light);
+      font-size: 0.8rem;
+      background-color: rgba(0, 0, 0, 0.1);
+      z-index: 10;
+    }
+    
+    /* Touch slider support */
+    .touch-slider {
+      overflow: hidden;
+      position: relative;
+      width: 100%;
+      height: 400px;
+    }
+    
+    .touch-slider-track {
+      display: flex;
+      width: 300%;
+      height: 100%;
+      transition: transform 0.3s ease-out;
+    }
+    
+    .touch-slider-item {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+      .city-name {
+        font-size: 2rem;
+      }
+      
+      .temperature {
+        font-size: 4rem;
+      }
+      
+      .condition {
+        font-size: 1.2rem;
+      }
+      
+      .weather-icon {
+        font-size: 3rem;
+      }
+      
+      .detail-value {
+        font-size: 1.2rem;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .tabs {
+        flex-wrap: wrap;
+      }
+      
+      .tab {
+        margin-bottom: 5px;
+      }
+      
+      .city-name {
+        font-size: 1.8rem;
+      }
+      
+      .temperature {
+        font-size: 3.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="background">
+      <div class="parallax-layer day" id="day-layer"></div>
+      <div class="parallax-layer night" id="night-layer"></div>
+      <div class="parallax-layer clouds" id="clouds-layer"></div>
+      <div class="parallax-layer stars" id="stars-layer"></div>
+    </div>
+    
+    <header class="header">
+      <h1>Weather App</h1>
+    </header>
+    
+    <div class="tabs">
+      <div class="tab active" data-city="lagos">Lagos</div>
+      <div class="tab" data-city="london">London</div>
+      <div class="tab" data-city="doha">Doha</div>
+    </div>
+    
+    <div class="weather-panels">
+      <div class="panel active" id="lagos-panel">
+        <h2 class="city-name">Lagos</h2>
+        <p class="local-time">Loading time...</p>
+        <div class="temperature">--°C</div>
+        <p class="condition">Loading weather condition...</p>
+        <div class="weather-icon">
+          <i class="fas fa-spinner fa-spin"></i>
+        </div>
+        <div class="details">
+          <div class="detail">
+            <i class="fas fa-tint"></i>
+            <span class="detail-value">--%</span>
+            <span class="detail-label">Humidity</span>
+          </div>
+          <div class="detail">
+            <i class="fas fa-wind"></i>
+            <span class="detail-value">-- km/h</span>
+            <span class="detail-label">Wind</span>
+          </div>
+        </div>
+        <div class="particles" id="lagos-particles"></div>
+      </div>
+      
+      <div class="panel" id="london-panel">
+        <h2 class="city-name">London</h2>
+        <p class="local-time">Loading time...</p>
+        <div class="temperature">--°C</div>
+        <p class="condition">Loading weather condition...</p>
+        <div class="weather-icon">
+          <i class="fas fa-spinner fa-spin"></i>
+        </div>
+        <div class="details">
+          <div class="detail">
+            <i class="fas fa-tint"></i>
+            <span class="detail-value">--%</span>
+            <span class="detail-label">Humidity</span>
+          </div>
+          <div class="detail">
+            <i class="fas fa-wind"></i>
+            <span class="detail-value">-- km/h</span>
+            <span class="detail-label">Wind</span>
+          </div>
+        </div>
+        <div class="particles" id="london-particles"></div>
+      </div>
+      
+      <div class="panel" id="doha-panel">
+        <h2 class="city-name">Doha</h2>
+        <p class="local-time">Loading time...</p>
+        <div class="temperature">--°C</div>
+        <p class="condition">Loading weather condition...</p>
+        <div class="weather-icon">
+          <i class="fas fa-spinner fa-spin"></i>
+        </div>
+        <div class="details">
+          <div class="detail">
+            <i class="fas fa-tint"></i>
+            <span class="detail-value">--%</span>
+            <span class="detail-label">Humidity</span>
+          </div>
+          <div class="detail">
+            <i class="fas fa-wind"></i>
+            <span class="detail-value">-- km/h</span>
+            <span class="detail-label">Wind</span>
+          </div>
+        </div>
+        <div class="particles" id="doha-particles"></div>
+      </div>
+    </div>
+    
+    <footer class="footer">
+      <p>Weather data provided by weather.com</p>
+    </footer>
+  </div>
+
+  <script id="app-script">
+    // Weather data prototype
+    const mockWeatherData = {
+      lagos: {
+        temperature: 32,
+        condition: "Sunny",
+        icon: "sun",
+        humidity: 70,
+        wind: 12,
+        timeZone: "Africa/Lagos",
+        weatherType: "clear"
+      },
+      london: {
+        temperature: 15,
+        condition: "Rainy",
+        icon: "cloud-rain",
+        humidity: 85,
+        wind: 18,
+        timeZone: "Europe/London",
+        weatherType: "rain"
+      },
+      doha: {
+        temperature: 38,
+        condition: "Clear",
+        icon: "sun",
+        humidity: 45,
+        wind: 8,
+        timeZone: "Asia/Qatar",
+        weatherType: "clear"
+      }
+    };
+    
+    // DOM Elements
+    const tabs = document.querySelectorAll('.tab');
+    const panels = document.querySelectorAll('.panel');
+    const dayLayer = document.getElementById('day-layer');
+    const nightLayer = document.getElementById('night-layer');
+    const cloudsLayer = document.getElementById('clouds-layer');
+    const starsLayer = document.getElementById('stars-layer');
+    
+    // Initialize the app
+    document.addEventListener('DOMContentLoaded', () => {
+      // Set initial city
+      updateWeather('lagos');
+      
+      // Tab click events
+      tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          const city = tab.dataset.city;
+          
+          // Update active tab
+          tabs.forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          
+          // Update active panel
+          panels.forEach(panel => panel.classList.remove('active'));
+          document.getElementById(`${city}-panel`).classList.add('active');
+          
+          // Update weather
+          updateWeather(city);
+        });
+      });
+      
+      // Touch swipe support
+      let startX = 0;
+      let currentIndex = 0;
+      const cityOrder = ['lagos', 'london', 'doha'];
+      
+      document.addEventListener('touchstart', (e) => {
+        startX = e.touches[0].clientX;
+      });
+      
+      document.addEventListener('touchend', (e) => {
+        const diffX = startX - e.changedTouches[0].clientX;
+        
+        if (Math.abs(diffX) > 50) { // Min swipe distance
+          if (diffX > 0) {
+            // Swipe left
+            currentIndex = Math.min(currentIndex + 1, 2);
+          } else {
+            // Swipe right
+            currentIndex = Math.max(currentIndex - 1, 0);
+          }
+          
+          const city = cityOrder[currentIndex];
+          
+          // Update tabs and panels
+          tabs.forEach(t => t.classList.remove('active'));
+          document.querySelector(`[data-city="${city}"]`).classList.add('active');
+          
+          panels.forEach(panel => panel.classList.remove('active'));
+          document.getElementById(`${city}-panel`).classList.add('active');
+          
+          // Update weather
+          updateWeather(city);
+        }
+      });
+    });
+    
+    // Function to update weather for a city
+    function updateWeather(city) {
+      const data = mockWeatherData[city];
+      const panel = document.getElementById(`${city}-panel`);
+      
+      // Update panel content
+      panel.querySelector('.temperature').textContent = `${data.temperature}°C`;
+      panel.querySelector('.condition').textContent = data.condition;
+      panel.querySelector('.weather-icon').innerHTML = `<i class="fas fa-${data.icon}"></i>`;
+      panel.querySelector('.detail:nth-child(1) .detail-value').textContent = `${data.humidity}%`;
+      panel.querySelector('.detail:nth-child(2) .detail-value').textContent = `${data.wind} km/h`;
+      
+      // Update time
+      updateLocalTime(city, data.timeZone);
+      
+      // Update background based on local time
+      updateBackground(city, data.timeZone, data.weatherType);
+      
+      // Create weather particles
+      createWeatherEffect(city, data.weatherType);
+    }
+    
+    // Function to update local time
+    function updateLocalTime(city, timeZone) {
+      const panel = document.getElementById(`${city}-panel`);
+      const timeElement = panel.querySelector('.local-time');
+      
+      // For the prototype, we'll simulate local time calculation
+      const now = new Date();
+      let hour = now.getHours();
+      let minutes = now.getMinutes();
+      
+      // Adjust hours based on timezone (simplified for prototype)
+      if (timeZone === 'Europe/London') hour = (hour + 23) % 24;
+      else if (timeZone === 'Asia/Qatar') hour = (hour + 1) % 24;
+      
+      // Format time
+      const formattedHour = hour.toString().padStart(2, '0');
+      const formattedMinutes = minutes.toString().padStart(2, '0');
+      timeElement.textContent = `${formattedHour}:${formattedMinutes}`;
+      
+      return hour; // Return hour for background calculation
+    }
+    
+    // Function to update background
+    function updateBackground(city, timeZone, weatherType) {
+      const hour = updateLocalTime(city, timeZone);
+      const isDay = hour >= 6 && hour < 18;
+      
+      // Set day/night
+      dayLayer.style.opacity = isDay ? 1 : 0;
+      nightLayer.style.opacity = isDay ? 0 : 1;
+      starsLayer.style.opacity = isDay ? 0 : 0.5;
+      cloudsLayer.style.opacity = weatherType === 'clear' ? 0.2 : 0.7;
+    }
+    
+    // Function to create weather effect particles
+    function createWeatherEffect(city, weatherType) {
+      const particlesContainer = document.getElementById(`${city}-particles`);
+      particlesContainer.innerHTML = '';
+      particlesContainer.className = `particles ${weatherType}`;
+      
+      if (weatherType === 'rain') {
+        for (let i = 0; i < 100; i++) {
+          createParticle(particlesContainer, weatherType);
+        }
+      } else if (weatherType === 'snow') {
+        for (let i = 0; i < 50; i++) {
+          createParticle(particlesContainer, weatherType);
+        }
+      }
+    }
+    
+    // Function to create individual particles
+    function createParticle(container, type) {
+      const particle = document.createElement('div');
+      particle.className = 'particle';
+      
+      // Random position
+      const posX = Math.random() * 100;
+      const delay = Math.random() * 5;
+      
+      particle.style.left = `${posX}%`;
+      particle.style.animationDelay = `${delay}s`;
+      particle.style.opacity = 1;
+      
+      container.appendChild(particle);
+    }
+  </script>
+</body>
+</html>
